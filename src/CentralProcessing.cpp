@@ -30,7 +30,7 @@ CentralProcessing::CentralProcessing() {
     sprintf(id, "%d", Authentication::GetId());
     //url.append(BASE_API_PATH).append(id).append("/parking").append("/entrance");
    
-    url.append("/imber/barrier/true");
+    url.append("/imber/io");
 
     // set connection timeout to 5s
     HttpConnection->SetTimeout(5);
@@ -50,7 +50,7 @@ CentralProcessing::CentralProcessing() {
 int CentralProcessing::HandleRequest() {
     RestClient::Response response;
 
-    syslog(LOG_INFO, "SETTINGS: sending GET %s", url.c_str());
+    syslog(LOG_INFO, "IO: sending GET %s", url.c_str());
     response = HttpConnection->get(url);
     return ParseResponse(response);
 }
@@ -69,37 +69,43 @@ int CentralProcessing::ParseResponse(RestClient::Response response) {
     Json::Reader reader;
     int id;
     int key;
-    bool TestOutput;
+    bool O1;
 
     bool parsingSuccessful = reader.parse(response.body, root);
-    syslog(LOG_INFO, "SETTINGS: response on GET settings= (%i) %s", response.code, response.body.c_str());
+    syslog(LOG_INFO, "IO: response on GET settings= (%i) %s", response.code, response.body.c_str());
     
     if (parsingSuccessful)
     {
+        /*
         if ((key=root.get("key" , 0).asInt())==0) { // defaults to 0 if not found in body
-            syslog(LOG_DEBUG, "SETTINGS: key not found in response");
+            syslog(LOG_DEBUG, "IO: key not found in response");
             return 0;
         }  
         if (key==Authentication::GetKey()) {
+            */
+
             // parse all other parameters if key matches
-            // Critical section
+            // Critical section (is not absolutely nessary because only one thread accesses the IO's)
             ThreadSynchronization::SettingsMutex.lock();
 
-            if (!root.isMember("test-output")) {
-                syslog(LOG_DEBUG, "SETTINGS: parameter 'test-output' not found in response");
+
+            // code to be adapted to json content
+            if (!root.isMember("O1")) {
+                syslog(LOG_DEBUG, "IO: parameter 'O1' not found in response");
             } else {
-                TestOutput=root.get("test-output", false).asBool();
-                IOHandler::SetIO("TestOutput", TestOutput);
+                O1=root.get("O1", false).asBool();
+                IOHandler::SetIO("O1", O1);
             }
-            
+
             // End critical section
             ThreadSynchronization::SettingsMutex.unlock();
-            syslog(LOG_INFO, "SETTINGS: settings updated");
+            syslog(LOG_INFO, "IO: settings updated");
             return 1;
+        /*
+        } else syslog(LOG_DEBUG, "IO: authentication failed");
+        */
 
-        } else syslog(LOG_DEBUG, "SETTINGS: authentication failed");
-
-    } else syslog(LOG_ERR, "SETTINGS: parsing failed");
+    } else syslog(LOG_ERR, "IO: parsing failed");
 
     return 0;
 }
@@ -109,10 +115,8 @@ void CentralProcessing::run() {
     syslog(LOG_INFO, "SETTINGS: thread started");
 
     while(1)  {
-        //syslog(LOG_INFO, "SETTINGS: sending GET request");
         HandleRequest();
-        
-        usleep(15000000); 
+        usleep(1000000); 
     }
     return;
 }
