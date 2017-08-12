@@ -17,7 +17,7 @@
 #include "HttpThread.hpp"
 
 int Authentication::Id=23;
-int Authentication::Key=1975;
+string Authentication::Token="c0b57a66f0006183c8bb7d05ce66bb43";
 
 Authentication::Authentication() {
     // parent class constructor is automatically called
@@ -47,7 +47,7 @@ int Authentication::ParseResponse(RestClient::Response response) {
     Json::Value root;
     Json::Reader reader;
     int id;
-    int key;
+    string token;
 
     bool parsingSuccessful = reader.parse(response.body, root);
     syslog(LOG_INFO, "AUTHENTICATION: response on GET idkey= (%i) %s", response.code, response.body.c_str());
@@ -58,27 +58,29 @@ int Authentication::ParseResponse(RestClient::Response response) {
             syslog(LOG_DEBUG, "AUTHENTICATION: id' not found in response");
             return 0;
         } 
-        if ((key=root.get("key" , 0).asInt())==0) { // defaults to 0 if not found in body
-            syslog(LOG_DEBUG, "AUTHENTICATION: key not found in response");
+        if (root.isMember("token")) {
+            token=root.get("token" , 0).asString();
+        } else {
+            syslog(LOG_DEBUG, "AUTHENTICATION: token not found in response");
             return 0;
-        }    
-        syslog(LOG_DEBUG, "AUTHENTICATION: receive id:%i key:%i", id, key);
+        }
+        syslog(LOG_DEBUG, "AUTHENTICATION: receive id:%i token:%s", id, token.c_str());
     } else {
         syslog(LOG_DEBUG, "AUTHENTICATION: parsing failed");
         return 0;
 
     }
-    syslog(LOG_INFO, "AUTHENTICATION: id and key updated");
-    Update(id, key);
+    syslog(LOG_INFO, "AUTHENTICATION: id and token updated");
+    Update(id, token);
 
     return 1;
 }
 
-void Authentication::Update(int id, int key) {
+void Authentication::Update(int id, string token) {
     // Critical section
     ThreadSynchronization::IdKeyMutex.lock();
     Id=id;
-    Key=key;
+    token=token;
     // End critical section
     ThreadSynchronization::IdKeyMutex.unlock();
 }
@@ -93,14 +95,14 @@ int Authentication::GetId() {
     return id;
 }
 
- int Authentication::GetKey() {
-    int key;
+ string Authentication::GetToken() {
+    string token;
     // Critical section
     ThreadSynchronization::IdKeyMutex.lock();
-    key = Key;
+    token = Token;
     // End critical section
     ThreadSynchronization::IdKeyMutex.unlock();
-    return key;
+    return token;
 }
 
 void Authentication::run() {

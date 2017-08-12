@@ -60,22 +60,6 @@ int main()
 #endif
     // INPUTS
     syslog(LOG_INFO, "Checking all IOs ..");
-    syslog(LOG_INFO, "EntranceLoopAct: %i",  IOHandler::GetIO("EntranceLoopAct"));
-    syslog(LOG_INFO, "ExitLoopAct    : %i",  IOHandler::GetIO("ExitLoopAct"));
-    syslog(LOG_INFO, "EntranceCO     : %i",  IOHandler::GetIO("EntranceCO"));
-    syslog(LOG_INFO, "ExitCO         : %i",  IOHandler::GetIO("ExitCO"));
-    syslog(LOG_INFO, "PLCAuto        : %i",  IOHandler::GetIO("PLCAuto"));
-    syslog(LOG_INFO, "TicketAct      : %i",  IOHandler::GetIO("TicketAct"));
-    syslog(LOG_INFO, "MoneyAct       : %i",  IOHandler::GetIO("MoneyAct"));
-    // OUPUTS
-    syslog(LOG_INFO, "Continu12V     :   "); IOHandler::SetIO("Continu12V", true);
-    sleep(1); IOHandler::SetIO("Continu12V", false);
-    syslog(LOG_INFO, "ContinuClosed  :   "); IOHandler::SetIO("ContinuClosed", true);
-    sleep(1); IOHandler::SetIO("ContinuClosed", false);
-    syslog(LOG_INFO, "OpenEntrance   :   "); IOHandler::SetIO("OpenEntrance", true);
-    sleep(1); IOHandler::SetIO("OpenEntrance", false);
-    syslog(LOG_INFO, "OpenExit       :   "); IOHandler::SetIO("OpenExit", true);
-    sleep(1); IOHandler::SetIO("OpenExit", false);
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 

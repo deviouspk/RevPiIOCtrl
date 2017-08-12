@@ -15,11 +15,13 @@
 
 //#define SERVER_ADDRESS "http://192.168.1.110"
 
-#define SERVER_ADDRESS "http://api.rsbots.org"
+#define SERVER_ADDRESS "http://api.imber.nu"
 
-#define BASE_API_PATH  "/api.imber.nu/client/"
+#define BASE_API_PATH  "/v1/controller"
 
 //#define DYNAMIC_AUTHENTICATION
+
+#define NR_OF_IOS   32
 
 #define SETTINGS_UPDATE_INTERVAL 1000000
 
